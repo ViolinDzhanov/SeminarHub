@@ -41,6 +41,6 @@ namespace SeminarHub.Data.Models
         [ForeignKey(nameof(CategoryId))]
         public Category Category { get; set; } = null!;
 
-        public ICollection<SeminarParticipant> Participants { get; set; } = new List<SeminarParticipant>();
+        public ICollection<SeminarParticipant> SeminarsParticipants { get; set; } = new List<SeminarParticipant>();
     }
 }

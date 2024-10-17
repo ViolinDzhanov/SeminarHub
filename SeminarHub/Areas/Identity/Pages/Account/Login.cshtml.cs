@@ -115,7 +115,7 @@ namespace SeminarHub.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    return RedirectToAction("All", "Seminar");
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -124,7 +124,7 @@ namespace SeminarHub.Areas.Identity.Pages.Account
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
+                    return RedirectToAction("All", "Seminar");
                 }
                 else
                 {

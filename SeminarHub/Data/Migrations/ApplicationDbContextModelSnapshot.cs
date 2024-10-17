@@ -239,7 +239,7 @@ namespace SeminarHub.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -306,7 +306,7 @@ namespace SeminarHub.Data.Migrations
 
                     b.HasIndex("OrganizerId");
 
-                    b.ToTable("Seminars");
+                    b.ToTable("Seminars", (string)null);
                 });
 
             modelBuilder.Entity("SeminarHub.Data.Models.SeminarParticipant", b =>
@@ -321,7 +321,7 @@ namespace SeminarHub.Data.Migrations
 
                     b.HasIndex("ParticipantId");
 
-                    b.ToTable("SeminarsParticipants");
+                    b.ToTable("SeminarsParticipants", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

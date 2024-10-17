@@ -35,6 +35,5 @@ namespace SeminarHub.Models
 
         [Required]
         public List<Category> Categories { get; set; } = new List<Category>();
-        //public string? OrganizerId { get; set; } ??
     }
 }
