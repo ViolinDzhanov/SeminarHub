@@ -65,6 +65,7 @@ namespace SeminarHub.Controllers
         public async Task<IActionResult> All()
         {
             var model = await context.Seminars
+                .Where(s => s.IsDeleted == false)
                 .Select(s => new SeminarInfoViewModel
                 {
                     Id = s.Id,
@@ -87,6 +88,8 @@ namespace SeminarHub.Controllers
            string currentUserId = GetCurrentUserId() ?? string.Empty;
             var model = await context.SeminarsParticipants
                     .Where(sp => sp.ParticipantId == currentUserId)
+                    .Include(sp => sp.Seminar)
+                    .Where(sp => sp.Seminar.IsDeleted == false)
                     .Select(sp => new SeminarInfoViewModel
                     {
                         Id = sp.Seminar.Id,
@@ -106,7 +109,9 @@ namespace SeminarHub.Controllers
         [HttpPost]
         public async Task<IActionResult> Join(int id)
         {
-           var seminar = await context.Seminars.FindAsync(id);
+           var seminar = await context.Seminars
+                .Where(s => s.IsDeleted == false)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (seminar == null)
             {
@@ -115,9 +120,11 @@ namespace SeminarHub.Controllers
 
             string currentUserId = GetCurrentUserId() ?? string.Empty;
 
-            if (await context.SeminarsParticipants.AnyAsync(sp => sp.SeminarId == id && sp.ParticipantId == currentUserId))
+            if (await context.SeminarsParticipants.AnyAsync(sp => sp.SeminarId == id && 
+                sp.ParticipantId == currentUserId && 
+                sp.Seminar.IsDeleted == false))
             {
-                return BadRequest("You have already joined this seminar.");
+                return NotFound();
             }
 
             var seminarParticipant = new SeminarParticipant
@@ -134,7 +141,9 @@ namespace SeminarHub.Controllers
 
         public async Task<IActionResult> Leave(int id)
         {
-            var seminar = await context.Seminars.FindAsync(id);
+            var seminar = await context.Seminars
+                .Where(s => s.IsDeleted == false)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (seminar == null)
             {
@@ -144,11 +153,11 @@ namespace SeminarHub.Controllers
             string currentUserId = GetCurrentUserId() ?? string.Empty;
 
             var seminarParticipant = await context.SeminarsParticipants
-                .FirstOrDefaultAsync(sp => sp.SeminarId == id && sp.ParticipantId == currentUserId);
+                .FirstOrDefaultAsync(sp => sp.SeminarId == id && sp.ParticipantId == currentUserId && sp.Seminar.IsDeleted == false);
 
             if (seminarParticipant == null)
             {
-                return BadRequest("You have not joined this seminar.");
+                return NotFound();
             }
 
             context.SeminarsParticipants.Remove(seminarParticipant);
@@ -162,6 +171,7 @@ namespace SeminarHub.Controllers
         {
             var model = await context.Seminars
                 .Where(s => s.Id == id)
+                .Where(s => s.IsDeleted == false)
                 .AsNoTracking()
                 .Select(s => new SeminarViewModel
                 {
@@ -195,7 +205,9 @@ namespace SeminarHub.Controllers
                 return View(model);
             }
 
-            Seminar? seminar = await context.Seminars.FindAsync(id);
+            Seminar? seminar = await context.Seminars
+                .Where(s => s.IsDeleted == false)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             seminar.Topic = model.Topic;
             seminar.Lecturer = model.Lecturer;
@@ -214,6 +226,7 @@ namespace SeminarHub.Controllers
         {
             var model = await context.Seminars
                 .Where(s => s.Id == id)
+                .Where(s => s.IsDeleted == false)
                 .AsNoTracking()
                 .Select(s => new SeminarDetailsViewModel
                 {
@@ -236,6 +249,7 @@ namespace SeminarHub.Controllers
         {
             var model = await context.Seminars
                 .Where(s => s.Id == id)
+                .Where(s => s.IsDeleted == false)
                 .Select(s => new SeminarDeleteViewModel
                 {
                     Id = s.Id,
@@ -250,14 +264,18 @@ namespace SeminarHub.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteConfirmed(SeminarDeleteViewModel model)
         {
-            var seminar = await context.Seminars.FindAsync(model.Id);
+            var seminar = await context.Seminars
+                .Where(s => s.Id == model.Id)
+                .Where(s => s.IsDeleted == false)
+                .FirstOrDefaultAsync();
 
             if (seminar == null)
             {
                 return NotFound();
             }
 
-            context.Seminars.Remove(seminar);
+            seminar.IsDeleted = true;
+         
             await context.SaveChangesAsync();
 
             return RedirectToAction(nameof(All));
